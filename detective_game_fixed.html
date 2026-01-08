@@ -368,6 +368,7 @@
             z-index: 100;
             text-align: center;
             padding: 40px;
+            box-sizing: border-box;
         }
 
         #title-screen h1 {
@@ -440,6 +441,7 @@
             text-align: center;
             padding: 30px 40px 40px 40px;
             overflow-y: auto;
+            box-sizing: border-box;
         }
 
         #ending-screen h1 {
@@ -932,8 +934,10 @@
             }
 
             // Handle scene changes
-            if (current.scene === 'bedroom') {
-                document.getElementById('scene-background').style.backgroundImage = "url('https://github.com/joshuakhenng-source/joshuakhenng.github.io/blob/main/bedroomv2.png?raw=true')";
+            if (current.scene === 'corridor') {
+                document.getElementById('scene-background').style.backgroundImage = "url('https://github.com/joshuakhenng-source/joshuakhenng.github.io/blob/main/corridor.jpg?raw=true')";
+            } else if (current.scene === 'bedroom') {
+                document.getElementById('scene-background').style.backgroundImage = "url('https://github.com/joshuakhenng-source/joshuakhenng.github.io/blob/main/bedroom_edited.png?raw=true')";
             }
 
             // Handle choices
@@ -953,12 +957,12 @@
                 skipButton.classList.add('hidden');
             } else {
                 choiceContainer.style.display = 'none';
-                skipButton.classList.remove('hidden');
-            }
-
-            // Handle skip button visibility
-            if (current.hideSkip) {
-                skipButton.classList.add('hidden');
+                // Always show skip button for regular dialogue
+                if (!current.hideSkip) {
+                    skipButton.classList.remove('hidden');
+                } else {
+                    skipButton.classList.add('hidden');
+                }
             }
 
             // Handle hotspots
@@ -982,11 +986,9 @@
 
             // Auto-advance to next scene
             if (current.next) {
-                setTimeout(() => {
-                    currentScene = current.next;
-                    currentDialogueIndex = 0;
-                    showDialogue();
-                }, 100);
+                // Only auto-advance if it's a system transition, not after user reads dialogue
+                // We'll handle this differently - remove auto-advance here
+                return;
             }
         }
 
@@ -997,15 +999,30 @@
                 updateMoodTracker();
             }
 
-            // Move to response dialogue
+            // Move to response dialogue - don't auto-advance
             currentScene = choice.response;
             currentDialogueIndex = 0;
-            showDialogue();
+            
+            // Small delay to prevent instant skip
+            setTimeout(() => {
+                showDialogue();
+            }, 50);
         }
 
         function nextDialogue() {
-            currentDialogueIndex++;
-            showDialogue();
+            const dialogue = dialogues[currentScene];
+            const current = dialogue[currentDialogueIndex];
+            
+            // Check if current dialogue has a 'next' property to jump to another scene
+            if (current && current.next) {
+                currentScene = current.next;
+                currentDialogueIndex = 0;
+                showDialogue();
+            } else {
+                // Otherwise, advance to next dialogue in current scene
+                currentDialogueIndex++;
+                showDialogue();
+            }
         }
 
         function enableHotspots() {
@@ -1139,7 +1156,7 @@
             document.getElementById('hotspot-container').innerHTML = '';
             document.getElementById('personality-tracker').style.display = 'none';
             document.getElementById('ending-screen').style.display = 'none';
-            document.getElementById('scene-background').style.backgroundImage = "url('https://github.com/joshuakhenng-source/joshuakhenng.github.io/blob/main/corridor.jpg?raw=true')";
+            document.getElementById('scene-background').style.backgroundImage = "url('https://github.com/joshuakhenng-source/joshuakhenng.github.io/blob/main/bedroom_edited.png?raw=true')";
             
             // Start game
             startGame();
